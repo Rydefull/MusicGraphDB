@@ -141,17 +141,21 @@ WHERE MATCH(m-(mb)->b) AND b.Genre = 'Rock';
 
 ------------------Shortest_path------------------
 
-SELECT a1.Title AS Album1, a2.Title AS Album2
-FROM Albums AS a1
-	, ReleasedAlbum AS r1
-	, Bands AS b1
-	, ReleasedAlbum AS r2
-	, Bands AS b2
-	, Albums AS a2
-WHERE MATCH(SHORTEST_PATH((a1)-(r1)->(b1)<-(r2)-(a2)))
-	AND a1.Title = 'Abbey Road'
-	AND a2.Title = 'OK Computer';
+SELECT Band1.Name AS BandName,
+       STRING_AGG(Band2.Name, '->') WITHIN GROUP (GRAPH PATH) AS InfluencedPath
+FROM Bands AS Band1,
+     Influenced FOR PATH AS i,
+     Bands FOR PATH AS Band2
+WHERE MATCH(SHORTEST_PATH(Band1(-(i)->Band2)+))
+  AND Band1.Name = 'The Beatles';
 
+SELECT Band1.Name AS BandName,
+       STRING_AGG(Band2.Name, '->') WITHIN GROUP (GRAPH PATH) AS InfluencedPath
+FROM Bands AS Band1,
+     Influenced FOR PATH AS i,
+     Bands FOR PATH AS Band2
+WHERE MATCH(SHORTEST_PATH(Band1(-(i)->Band2){1,3}))
+  AND Band1.Name = 'The Beatles';
 
 --------------Настройки для power bi------------
 
@@ -204,3 +208,4 @@ FROM dbo.Members AS M,
      dbo.Bands AS B
 WHERE MATCH (M-(MOB)->B);
 
+--------------------------------------------------------
